@@ -26,7 +26,7 @@ func TestRegisterUser(t *testing.T) {
 	router := sut.SetupRouter()
 	w := httptest.NewRecorder()
 
-	var jsonStr = []byte(`{"name":"vader""}`)
+	var jsonStr = []byte(`{"name":"vader"}`)
 	req, _ := http.NewRequest("POST", "/user/register", bytes.NewBuffer(jsonStr))
 	req.Header.Add("content-type", "application/json")
 	router.ServeHTTP(w, req)
@@ -39,7 +39,7 @@ func TestGivenNoTweetsProfileShouldReturnEmpty(t *testing.T) {
 	router := sut.SetupRouter()
 	w := httptest.NewRecorder()
 
-	var jsonStr = []byte(`{"name":"vader""}`)
+	var jsonStr = []byte(`{"name":"vader"}`)
 	req, _ := http.NewRequest("POST", "/user/register", bytes.NewBuffer(jsonStr))
 	req.Header.Add("content-type", "application/json")
 	router.ServeHTTP(w, req)
@@ -50,4 +50,26 @@ func TestGivenNoTweetsProfileShouldReturnEmpty(t *testing.T) {
 
 	assert.Equal(t, 200, w.Code)
 	assert.Equal(t, "{\"tweets\":[]}", w.Body.String())
+}
+
+func TestGivenSentATweetProfileShouldReturnTweet(t *testing.T) {
+	router := sut.SetupRouter()
+	w := httptest.NewRecorder()
+
+	jsonStr := []byte(`{"name":"vader"}`)
+	req, _ := http.NewRequest("POST", "/user/register", bytes.NewBuffer(jsonStr))
+	req.Header.Add("content-type", "application/json")
+	router.ServeHTTP(w, req)
+
+	jsonStr = []byte(`{"message":"I am your subtweeter"}`)
+	req, _ = http.NewRequest("POST", "/user/vader/tweet", bytes.NewBuffer(jsonStr))
+	req.Header.Add("content-type", "application/json")
+	router.ServeHTTP(w, req)
+
+	w = httptest.NewRecorder()
+	req, _ = http.NewRequest("GET", "/user/vader", nil)
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, 200, w.Code)
+	assert.Equal(t, `{"tweets":["I am your subtweeter"]}`, w.Body.String())
 }

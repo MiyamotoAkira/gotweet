@@ -7,6 +7,7 @@ import (
 )
 
 var users []string
+var messages = make(map[string][]string)
 
 func SetupRouter() *gin.Engine {
 	// Disable Console Color
@@ -20,7 +21,21 @@ func SetupRouter() *gin.Engine {
 
 	// Get user value
 	r.GET("/user/:name", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"tweets": make([]string, 0)})
+		userName := c.Param("name")
+		c.JSON(http.StatusOK, gin.H{"tweets": messages[userName]})
+	})
+
+	r.POST("/user/:name/tweet", func(c *gin.Context) {
+		userName := c.Param("name")
+
+		var json struct {
+			Message string `json:"message" binding:"required"`
+		}
+
+		if c.Bind(&json) == nil {
+			messages[userName] = append(messages[userName], json.Message)
+			c.String(http.StatusCreated, "")
+		}
 	})
 
 	// Authorized group (uses gin.BasicAuth() middleware)
@@ -37,9 +52,16 @@ func SetupRouter() *gin.Engine {
 
 	//r.GET("/user/:name", func(c *gin.Context) {
 	r.POST("/user/register", func(c *gin.Context) {
-		user := c.Params.ByName("name")
-		users = append(users, user)
-		c.String(http.StatusCreated, "")
+		var json struct {
+			Name string `json:"name" binding:"required"`
+		}
+		bindError := c.Bind(&json)
+		if bindError == nil {
+			userName := json.Name
+			users = append(users, userName)
+			messages[userName] = make([]string, 0)
+			c.String(http.StatusCreated, "")
+		}
 	})
 
 	return r
