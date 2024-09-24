@@ -24,17 +24,27 @@ func TestBasicFlow(t *testing.T) {
 
 func TestBasicPost(t *testing.T) {
 	router := sut.SetupRouter()
-
 	w := httptest.NewRecorder()
 
 	var jsonStr = []byte(`{"value":"weee"}`)
 	req, _ := http.NewRequest("POST", "/admin", bytes.NewBuffer(jsonStr))
-
 	req.Header.Add("authorization", "Basic Zm9vOmJhcg==")
 	req.Header.Add("content-type", "application/json")
-
 	router.ServeHTTP(w, req)
 
 	assert.Equal(t, 200, w.Code)
 	assert.Equal(t, "{\"status\":\"ok\"}", w.Body.String())
+}
+
+func TestRegisterUser(t *testing.T) {
+	router := sut.SetupRouter()
+	w := httptest.NewRecorder()
+
+	var jsonStr = []byte(`{"name":"vader""}`)
+	req, _ := http.NewRequest("POST", "/user/register", bytes.NewBuffer(jsonStr))
+	req.Header.Add("content-type", "application/json")
+	router.ServeHTTP(w, req)
+
+	assert.Equal(t, 201, w.Code)
+	assert.Equal(t, "", w.Body.String())
 }

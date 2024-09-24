@@ -7,6 +7,7 @@ import (
 )
 
 var db = make(map[string]string)
+var users []string
 
 func SetupRouter() *gin.Engine {
 	// Disable Console Color
@@ -62,6 +63,13 @@ func SetupRouter() *gin.Engine {
 			db[user] = json.Value
 			c.JSON(http.StatusOK, gin.H{"status": "ok"})
 		}
+	})
+
+	//r.GET("/user/:name", func(c *gin.Context) {
+	r.POST("/user/register", func(c *gin.Context) {
+		user := c.Params.ByName("name")
+		users = append(users, user)
+		c.String(http.StatusCreated, "")
 	})
 
 	return r
