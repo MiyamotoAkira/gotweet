@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	repo := datastore.Setup()
+	repo := datastore.Setup("tweet.db")
 	r := routes.SetupRouter(repo)
 	// Listen and Server in 0.0.0.0:8080
 	r.Run(":8080")

@@ -44,9 +44,7 @@ func (r *SQLiteRepository) Migrate() error {
 	return err
 }
 
-const fileName = "/tmp/tweet.db"
-
-func CreateSqliteDB() *sql.DB {
+func CreateSqliteDB(fileName string) *sql.DB {
 	os.Remove(fileName)
 	db, err := sql.Open("sqlite3", fileName)
 	if err != nil {
@@ -56,8 +54,8 @@ func CreateSqliteDB() *sql.DB {
 	return db
 }
 
-func Setup() *SQLiteRepository {
-	db := CreateSqliteDB()
+func Setup(fileName string) *SQLiteRepository {
+	db := CreateSqliteDB(fileName)
 	repo := NewSQLiteRepository(db)
 	if err := repo.Migrate(); err != nil {
 		log.Fatal(err)

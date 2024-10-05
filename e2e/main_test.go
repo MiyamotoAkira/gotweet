@@ -16,7 +16,7 @@ type MainTestSuite struct {
 }
 
 func (suite *MainTestSuite) SetupTest() {
-	suite.repo = datastore.Setup()
+	suite.repo = datastore.Setup("/tmp/tweet.db")
 }
 
 func (suite *MainTestSuite) TestBasicFlow() {
