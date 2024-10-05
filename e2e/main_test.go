@@ -4,11 +4,16 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httptest"
+	"testing"
 
 	datastore "github.com/MiyamotoAkira/gotweet/datastore"
 	sut "github.com/MiyamotoAkira/gotweet/routes"
 	"github.com/stretchr/testify/suite"
 )
+
+func TestSuite(t *testing.T) {
+	suite.Run(t, new(MainTestSuite))
+}
 
 type MainTestSuite struct {
 	suite.Suite
