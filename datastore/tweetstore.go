@@ -44,6 +44,47 @@ func (r *SQLiteRepository) Migrate() error {
 	return err
 }
 
+func (r *SQLiteRepository) CreateUser(userName string) error {
+	query := `INSERT INTO users(name) VALUES (?)`
+
+	_, err := r.db.Exec(query, userName)
+	return err
+}
+
+func (r *SQLiteRepository) GetTweetsFromUser(userName string) ([]string, error) {
+	query := `SELECT tweet
+		FROM tweetstore 
+		    INNER JOIN users ON users.id = tweetstore.user_id
+		WHERE users.name = ?`
+
+	rows, err := r.db.Query(query, userName)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	tweets := []string{}
+
+	for rows.Next() {
+		var tweet string
+		rows.Scan(&tweet)
+		tweets = append(tweets, tweet)
+	}
+
+	return tweets, nil
+}
+
+func (r *SQLiteRepository) CreateTweet(userName string, tweet string) error {
+	query := `SELECT id FROM users WHERE name = ?`
+
+	row := r.db.QueryRow(query, userName)
+	var id int
+	row.Scan(&id)
+
+	query = `INSERT INTO tweetstore(user_id, tweet) VALUES (?, ?)`
+	_, err := r.db.Exec(query, id, tweet)
+	return err
+}
+
 func CreateSqliteDB(fileName string) *sql.DB {
 	os.Remove(fileName)
 	db, err := sql.Open("sqlite3", fileName)

@@ -1,15 +1,13 @@
 package routes
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
 	datastore "github.com/MiyamotoAkira/gotweet/datastore"
 )
-
-var users []string
-var messages = make(map[string][]string)
 
 func SetupRouter(repo *datastore.SQLiteRepository) *gin.Engine {
 	// Disable Console Color
@@ -24,7 +22,11 @@ func SetupRouter(repo *datastore.SQLiteRepository) *gin.Engine {
 	// Get user value
 	r.GET("/user/:name", func(c *gin.Context) {
 		userName := c.Param("name")
-		c.JSON(http.StatusOK, gin.H{"tweets": messages[userName]})
+		tweets, err := repo.GetTweetsFromUser(userName)
+		if err != nil {
+			log.Fatal(err)
+		}
+		c.JSON(http.StatusOK, gin.H{"tweets": tweets})
 	})
 
 	r.POST("/user/:name/tweet", func(c *gin.Context) {
@@ -35,7 +37,7 @@ func SetupRouter(repo *datastore.SQLiteRepository) *gin.Engine {
 		}
 
 		if c.Bind(&json) == nil {
-			messages[userName] = append(messages[userName], json.Message)
+			repo.CreateTweet(userName, json.Message)
 			c.String(http.StatusCreated, "")
 		}
 	})
@@ -60,8 +62,7 @@ func SetupRouter(repo *datastore.SQLiteRepository) *gin.Engine {
 		bindError := c.Bind(&json)
 		if bindError == nil {
 			userName := json.Name
-			users = append(users, userName)
-			messages[userName] = make([]string, 0)
+			repo.CreateUser(userName)
 			c.String(http.StatusCreated, "")
 		}
 	})
