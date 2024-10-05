@@ -4,26 +4,35 @@ import (
 	"bytes"
 	"net/http"
 	"net/http/httptest"
-	"testing"
 
+	datastore "github.com/MiyamotoAkira/gotweet/datastore"
 	sut "github.com/MiyamotoAkira/gotweet/routes"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestBasicFlow(t *testing.T) {
-	router := sut.SetupRouter()
+type MainTestSuite struct {
+	suite.Suite
+	repo *datastore.SQLiteRepository
+}
+
+func (suite *MainTestSuite) SetupTest() {
+	suite.repo = datastore.Setup()
+}
+
+func (suite *MainTestSuite) TestBasicFlow() {
+	router := sut.SetupRouter(suite.repo)
 
 	w := httptest.NewRecorder()
 
 	req, _ := http.NewRequest("GET", "/ping", nil)
 	router.ServeHTTP(w, req)
 
-	assert.Equal(t, 200, w.Code)
-	assert.Equal(t, "pong", w.Body.String())
+	suite.Equal(200, w.Code)
+	suite.Equal("pong", w.Body.String())
 }
 
-func TestRegisterUser(t *testing.T) {
-	router := sut.SetupRouter()
+func (suite *MainTestSuite) TestRegisterUser() {
+	router := sut.SetupRouter(suite.repo)
 	w := httptest.NewRecorder()
 
 	var jsonStr = []byte(`{"name":"vader"}`)
@@ -31,12 +40,12 @@ func TestRegisterUser(t *testing.T) {
 	req.Header.Add("content-type", "application/json")
 	router.ServeHTTP(w, req)
 
-	assert.Equal(t, 201, w.Code)
-	assert.Equal(t, "", w.Body.String())
+	suite.Equal(201, w.Code)
+	suite.Equal("", w.Body.String())
 }
 
-func TestGivenNoTweetsProfileShouldReturnEmpty(t *testing.T) {
-	router := sut.SetupRouter()
+func (suite *MainTestSuite) TestGivenNoTweetsProfileShouldReturnEmpty() {
+	router := sut.SetupRouter(suite.repo)
 	w := httptest.NewRecorder()
 
 	var jsonStr = []byte(`{"name":"vader"}`)
@@ -48,12 +57,12 @@ func TestGivenNoTweetsProfileShouldReturnEmpty(t *testing.T) {
 	req, _ = http.NewRequest("GET", "/user/vader", nil)
 	router.ServeHTTP(w, req)
 
-	assert.Equal(t, 200, w.Code)
-	assert.Equal(t, "{\"tweets\":[]}", w.Body.String())
+	suite.Equal(200, w.Code)
+	suite.Equal("{\"tweets\":[]}", w.Body.String())
 }
 
-func TestGivenSentATweetProfileShouldReturnTweet(t *testing.T) {
-	router := sut.SetupRouter()
+func (suite *MainTestSuite) TestGivenSentATweetProfileShouldReturnTweet() {
+	router := sut.SetupRouter(suite.repo)
 	w := httptest.NewRecorder()
 
 	jsonStr := []byte(`{"name":"vader"}`)
@@ -70,6 +79,6 @@ func TestGivenSentATweetProfileShouldReturnTweet(t *testing.T) {
 	req, _ = http.NewRequest("GET", "/user/vader", nil)
 	router.ServeHTTP(w, req)
 
-	assert.Equal(t, 200, w.Code)
-	assert.Equal(t, `{"tweets":["I am your subtweeter"]}`, w.Body.String())
+	suite.Equal(200, w.Code)
+	suite.Equal(`{"tweets":["I am your subtweeter"]}`, w.Body.String())
 }

@@ -1,11 +1,13 @@
 package main
 
 import (
+	datastore "github.com/MiyamotoAkira/gotweet/datastore"
 	routes "github.com/MiyamotoAkira/gotweet/routes"
 )
 
 func main() {
-	r := routes.SetupRouter()
+	repo := datastore.Setup()
+	r := routes.SetupRouter(repo)
 	// Listen and Server in 0.0.0.0:8080
 	r.Run(":8080")
 }

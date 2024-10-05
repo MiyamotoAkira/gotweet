@@ -4,12 +4,14 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
+	datastore "github.com/MiyamotoAkira/gotweet/datastore"
 )
 
 var users []string
 var messages = make(map[string][]string)
 
-func SetupRouter() *gin.Engine {
+func SetupRouter(repo *datastore.SQLiteRepository) *gin.Engine {
 	// Disable Console Color
 	// gin.DisableConsoleColor()
 	r := gin.Default()
